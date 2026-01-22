@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'dev-server'}
+    agent { label 'dev-server' }
 
     stages {
         stage("Code clone") {
@@ -15,23 +15,17 @@ pipeline {
             }
         }
 
-        stage("Run Containers") {
-            steps {
-                // This will stop and remove old containers before starting new ones
-                sh "docker compose down --remove-orphans || true"
-                sh "docker compose up -d --remove-orphans"
-            }
-        }
-
         stage("Push to DockerHub") {
             steps {
-                // add your docker push commands here
+                sh "echo 'Push stage running...'"
+                // add docker push command here
             }
         }
 
         stage("Deploy") {
             steps {
-                // add deploy commands here
+                sh "echo 'Deploy stage running...'"
+                // add deploy command here
             }
         }
     }
