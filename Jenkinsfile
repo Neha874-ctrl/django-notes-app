@@ -2,13 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone Code') {
-            steps {
-                git branch: 'main',
-                    url: 'git@github.com:Neha874-ctrl/django-notes-app.git'
-            }
-        }
-
         stage('Build Docker Images') {
             steps {
                 sh 'docker --version'
