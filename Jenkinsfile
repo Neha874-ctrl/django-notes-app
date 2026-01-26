@@ -17,16 +17,13 @@ pipeline {
 
         stage("Push to DockerHub") {
             steps {
-                withCredentials([jenkinsdckr_pat_n3KV9E2_ZOE3kBIyrvanR6pSmcE(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh """
-                      echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                      docker push cloudcrates/django-notes-app
-                      docker push cloudcrates/django-nginx
-                    """
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh "docker login -u $DOCKER_USER -p $DOCKER_PASS"
+                    sh "docker tag django_app $DOCKER_USER/django-notes-app:latest"
+                    sh "docker push $DOCKER_USER/django-notes-app:latest"
+
+                    sh "docker tag nginx $DOCKER_USER/django-nginx:latest"
+                    sh "docker push $DOCKER_USER/django-nginx:latest"
                 }
             }
         }
