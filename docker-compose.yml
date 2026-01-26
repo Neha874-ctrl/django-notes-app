@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   nginx:
+    image: neha874/django-nginx
     build:
       context: ./nginx
     container_name: "nginx_cont"
@@ -33,6 +34,7 @@ services:
       retries: 5
       start_period: 60s
   django:
+    image: neha874/django-notes-app
     build:
       context: .
     container_name: "django_cont"
