@@ -29,8 +29,11 @@ pipeline {
 
         stage("Deploy") {
             steps {
-                sh "docker compose down -v || true"
-                sh "docker compose up -d"
+              sh "docker rm -f db_cont || true"
+              sh "docker rm -f django_cont || true"
+              sh "docker rm -f nginx_cont || true"
+
+              sh "docker compose up -d"
             }
         }
     }
