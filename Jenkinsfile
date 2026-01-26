@@ -4,8 +4,7 @@ pipeline {
     stages {
         stage("Code clone") {
             steps {
-                sh "whoami"
-                git url: "https://github.com/LondheShubham153/django-notes-app.git", branch: "main"
+                git url: "https://github.com/Neha874-ctrl/django-notes-app.git", branch: "main"
             }
         }
 
@@ -17,13 +16,14 @@ pipeline {
 
         stage("Push to DockerHub") {
             steps {
-                withcredentials([usernamePassword(credentialsID: 'dockerhub-creds', usernameVariable: 'DOCKER-USER', passwordVariable: 'DOCKER_PASS')]) {
-                  sh "docker login -u $DOCKER-USER -p $DOCKER_PASS"
-                  sh "docker tag django_app $DOCKER_USER/django-notes-app:latest"
-                  sh "docker push $DOCKER_USER/django-notes-app:latest"
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh "docker login -u $DOCKER_USER -p $DOCKER_PASS"
+                    sh "docker tag django_app $DOCKER_USER/django-notes-app:latest"
+                    sh "docker push $DOCKER_USER/django-notes-app:latest"
 
-                  sh "docker tag nginx $DOCKER_USER/django-nginx:latest"
-                  sh "docker push $DOCKER_USER/django-nginx:latest"
+                    sh "docker tag nginx $DOCKER_USER/django-nginx:latest"
+                    sh "docker push $DOCKER_USER/django-nginx:latest"
+                }
             }
         }
 
@@ -31,7 +31,6 @@ pipeline {
             steps {
                 sh "docker compose down"
                 sh "docker compose up -d"
-                // add deploy command here
             }
         }
     }
