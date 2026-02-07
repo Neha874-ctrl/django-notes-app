@@ -16,30 +16,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # =========================
 
-# Secret key (from Jenkins / env)
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key")
 
-# Debug flag (False in prod)
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-# Allowed hosts (comma separated in env)
 ALLOWED_HOSTS = os.getenv(
     "ALLOWED_HOSTS",
     "localhost,127.0.0.1"
 ).split(",")
 
-# HTTPS / Proxy support (important behind Nginx)
+# Behind Nginx / Reverse Proxy
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Force HTTPS in prod
 SECURE_SSL_REDIRECT = not DEBUG
 
-# HSTS (only in prod)
 SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
 SECURE_HSTS_PRELOAD = not DEBUG
 
-# Cookie & browser security
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 CSRF_COOKIE_SECURE = not DEBUG
@@ -75,7 +69,7 @@ MIDDLEWARE = [
 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',  # enable later if needed
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -108,7 +102,7 @@ WSGI_APPLICATION = 'notesapp.wsgi.application'
 
 
 # =========================
-# DATABASE (Docker + Jenkins)
+# DATABASE
 # =========================
 
 DATABASES = {
@@ -146,7 +140,7 @@ USE_TZ = True
 
 
 # =========================
-# STATIC FILES
+# STATIC FILES (NGINX READY)
 # =========================
 
 STATIC_URL = '/static/'
