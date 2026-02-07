@@ -5,7 +5,10 @@ Django settings for notesapp project.
 import os
 from pathlib import Path
 
-# Build paths
+# =========================
+# BASE
+# =========================
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -13,13 +16,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # =========================
 
-# SECRET KEY (from Jenkins / env)
+# Secret key (from Jenkins / env)
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key")
 
-# DEBUG (False in Jenkins)
-DEBUG = os.getenv("DEBUG", "False") == "True"
+# Debug flag
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = ["*"]
+# Allowed hosts (nginx / docker / prod safe)
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
 
 # =========================
@@ -46,12 +50,12 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',  # optional
+    # 'django.middleware.csrf.CsrfViewMiddleware',  # enable later if needed
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -67,9 +71,7 @@ ROOT_URLCONF = 'notesapp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            BASE_DIR / 'mynotes/build'
-        ],
+        'DIRS': [BASE_DIR / 'mynotes/build'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -82,12 +84,11 @@ TEMPLATES = [
     },
 ]
 
-
 WSGI_APPLICATION = 'notesapp.wsgi.application'
 
 
 # =========================
-# DATABASE (Docker + Jenkins)
+# DATABASE
 # =========================
 
 DATABASES = {
@@ -95,7 +96,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv("DB_NAME", "test_db"),
         'USER': os.getenv("DB_USER", "root"),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'PASSWORD': os.getenv("DB_PASSWORD", ""),
         'HOST': os.getenv("DB_HOST", "db"),
         'PORT': os.getenv("DB_PORT", "3306"),
     }
@@ -128,13 +129,15 @@ USE_TZ = True
 # STATIC FILES
 # =========================
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'mynotes/build/static')
+    BASE_DIR / 'mynotes/build/static'
 ]
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # =========================
@@ -148,4 +151,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS
 # =========================
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
