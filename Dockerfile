@@ -1,20 +1,45 @@
-FROM python:3.9
+FROM python:3.11-slim
 
-WORKDIR /app/backend
+# =========================
+# ENV
+# =========================
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-COPY requirements.txt /app/backend
+# =========================
+# SYSTEM DEPENDENCIES
+# =========================
 RUN apt-get update \
-    && apt-get upgrade -y \
     && apt-get install -y gcc default-libmysqlclient-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
+# =========================
+# WORKDIR
+# =========================
+WORKDIR /app
 
-# Install app dependencies
-RUN pip install mysqlclient
+# =========================
+# PYTHON DEPENDENCIES
+# =========================
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /app/backend
+# =========================
+# PROJECT FILES
+# =========================
+COPY . .
 
+# =========================
+# COLLECT STATIC
+# =========================
+RUN python manage.py collectstatic --noinput
+
+# =========================
+# PORT
+# =========================
 EXPOSE 8000
-#RUN python manage.py migrate
-#RUN python manage.py makemigrations
+
+# =========================
+# START SERVER
+# =========================
+CMD ["gunicorn", "notesapp.wsgi:application", "--bind", "0.0.0.0:8000"]
