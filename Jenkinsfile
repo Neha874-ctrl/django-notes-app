@@ -6,6 +6,7 @@ pipeline {
         IMAGE_TAG = "${BUILD_NUMBER}"
         DOCKER_IMAGE_APP = "django-notes-app"
         DOCKER_IMAGE_NGINX = "django-nginx"
+        
     }
 
     stages {
@@ -41,26 +42,27 @@ pipeline {
         }
 
         stage("Push to DockerHub") {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-creds',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS'
-                    )
-                ]) {
-                    sh '''
-                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+    when {
+        expression { params.ENV == 'prod' }
+    }
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'dockerhub-creds',
+                usernameVariable: 'DOCKER_USER',
+                passwordVariable: 'DOCKER_PASS'
+            )
+        ]) {
+            sh '''
+              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-                      docker push $DOCKER_USER/django-notes-app:$IMAGE_TAG
-                      docker push $DOCKER_USER/django-notes-app:latest
-
-                      docker push $DOCKER_USER/django-nginx:$IMAGE_TAG
-                      docker push $DOCKER_USER/django-nginx:latest
-                    '''
-                }
-            }
+              docker push $DOCKER_USER/django-notes-app:$IMAGE_TAG
+              docker push $DOCKER_USER/django-nginx:$IMAGE_TAG
+            '''
         }
+    }
+}
+
 
         stage("Deploy") {
             steps {
