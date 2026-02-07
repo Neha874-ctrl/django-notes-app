@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        ENV = "prod"                  // change to dev if needed
         DOCKER_IMAGE_APP = "django-notes-app"
         DOCKER_IMAGE_NGINX = "django-nginx"
     }
@@ -15,11 +16,25 @@ pipeline {
             }
         }
 
+        stage("Prepare Environment") {
+            steps {
+                sh '''
+                  echo "🔧 Environment: $ENV"
+
+                  if [ "$ENV" = "prod" ]; then
+                    cp .env.prod .env
+                  else
+                    cp .env.dev .env
+                  fi
+                '''
+            }
+        }
+
         stage("Build Images") {
             steps {
-                sh """
+                sh '''
                   docker compose build
-                """
+                '''
             }
         }
 
@@ -32,7 +47,7 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
-                    sh """
+                    sh '''
                       echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
                       docker tag neha874/django-notes-app:latest $DOCKER_USER/django-notes-app:latest
@@ -40,17 +55,17 @@ pipeline {
 
                       docker tag neha874/django-nginx:latest $DOCKER_USER/django-nginx:latest
                       docker push $DOCKER_USER/django-nginx:latest
-                    """
+                    '''
                 }
             }
         }
 
         stage("Deploy") {
             steps {
-                sh """
+                sh '''
                   docker compose down
-                  docker compose up -d --build
-                """
+                  docker compose up -d
+                '''
             }
         }
     }
