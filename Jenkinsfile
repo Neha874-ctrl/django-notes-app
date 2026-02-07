@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        ENV = "prod"                  // change to dev if needed
+        ENV = "prod"
+        IMAGE_TAG = "${BUILD_NUMBER}"
         DOCKER_IMAGE_APP = "django-notes-app"
         DOCKER_IMAGE_NGINX = "django-nginx"
     }
@@ -19,8 +20,6 @@ pipeline {
         stage("Prepare Environment") {
             steps {
                 sh '''
-                  echo "🔧 Environment: $ENV"
-
                   if [ "$ENV" = "prod" ]; then
                     cp .env.prod .env
                   else
@@ -34,6 +33,9 @@ pipeline {
             steps {
                 sh '''
                   docker compose build
+
+                  docker tag neha874/django-notes-app:latest neha874/django-notes-app:$IMAGE_TAG
+                  docker tag neha874/django-nginx:latest neha874/django-nginx:$IMAGE_TAG
                 '''
             }
         }
@@ -50,10 +52,10 @@ pipeline {
                     sh '''
                       echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-                      docker tag neha874/django-notes-app:latest $DOCKER_USER/django-notes-app:latest
+                      docker push $DOCKER_USER/django-notes-app:$IMAGE_TAG
                       docker push $DOCKER_USER/django-notes-app:latest
 
-                      docker tag neha874/django-nginx:latest $DOCKER_USER/django-nginx:latest
+                      docker push $DOCKER_USER/django-nginx:$IMAGE_TAG
                       docker push $DOCKER_USER/django-nginx:latest
                     '''
                 }
@@ -72,10 +74,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment successful"
+            echo "✅ Build ${IMAGE_TAG} deployed successfully"
         }
         failure {
-            echo "❌ Deployment failed"
+            echo "❌ Build ${IMAGE_TAG} failed"
         }
         always {
             sh "docker system prune -f"
