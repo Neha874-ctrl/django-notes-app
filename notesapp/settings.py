@@ -19,11 +19,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Secret key (from Jenkins / env)
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key")
 
-# Debug flag
+# Debug flag (False in prod)
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-# Allowed hosts (nginx / docker / prod safe)
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+# Allowed hosts (comma separated in env)
+ALLOWED_HOSTS = os.getenv(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1"
+).split(",")
+
+# HTTPS / Proxy support (important behind Nginx)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Force HTTPS in prod
+SECURE_SSL_REDIRECT = not DEBUG
+
+# HSTS (only in prod)
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
+
+# Cookie & browser security
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
 
 
 # =========================
@@ -88,7 +108,7 @@ WSGI_APPLICATION = 'notesapp.wsgi.application'
 
 
 # =========================
-# DATABASE
+# DATABASE (Docker + Jenkins)
 # =========================
 
 DATABASES = {
