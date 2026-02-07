@@ -1,6 +1,10 @@
 version: "3.8"
 
 services:
+  # =========================
+  # EXISTING SETUP (UNCHANGED)
+  # =========================
+
   nginx:
     image: neha874/django-nginx
     build:
@@ -33,6 +37,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 60s
+
   django:
     image: neha874/django-notes-app
     build:
@@ -45,7 +50,6 @@ services:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       DB_PASSWORD: ${DB_PASSWORD}
       DEBUG: "False"
-
     restart: always
     depends_on:
       - db
@@ -59,5 +63,41 @@ services:
       start_period: 60s
 
 
+  # =========================
+  # NEW PROD-READY SETUP (ADDED)
+  # =========================
+
+  web:
+    image: neha874/django-notes-app:${IMAGE_TAG}
+    container_name: django_app
+    env_file:
+      - .env
+    volumes:
+      - static_volume:/app/staticfiles
+    depends_on:
+      - db
+    networks:
+      - notes-app
+
+  nginx_prod:
+    image: neha874/django-nginx:${IMAGE_TAG}
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/static
+    depends_on:
+      - web
+    networks:
+      - notes-app
+
+
+# =========================
+# NETWORKS & VOLUMES
+# =========================
+
 networks:
   notes-app:
+
+volumes:
+  static_volume:
